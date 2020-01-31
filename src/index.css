@@ -125,7 +125,68 @@ input {
   background: #072856;
 }
 
+.blue-font-color{
+  color:#072856;
+}
+
 
 .selected-columns {
   background: lightgray;
+}
+
+.dynamicForm__itemInput{
+  width: 93%;
+  margin-right: 50px;
+}
+
+.fl{
+  float: left;
+}
+.fr{
+  float: right;
+}
+
+.f15{
+  font-size: 25px;
+}
+
+.ma2040{
+  margin: 20px 40px
+}
+
+.tc{
+  text-align: center;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.form-container {
+  border:2px solid #072856;
+  padding:10px;
+  border-radius:5px;
+}
+
+.form-transion{
+  height: 0px;
+  overflow: hidden;
+  transition: height 1s;
+}
+
+
+.group-form {
+  margin:10px;
+}
+
+.sub-group-form {
+  margin:10px 10px 10px 30px;
+}
+
+.operation-form {
+  margin:10px 10px 10px 50px;
 }
