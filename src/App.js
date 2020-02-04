@@ -47,21 +47,20 @@ class App extends React.Component {
       dt1selectedcolumns:[],
       showcreateform:false,
       selected_column_d2:{},
-      created_form: []
+      created_form: [],
+      dropdowns:[],
+      actives: []
     };
   }
 
   animateFirstForm = (last_index=null) => {
     let index_id = null;
     if(last_index){
-      console.log(1)
       index_id = "transion"+last_index
     } else {
-      console.log(2)
       index_id = "transion0"
     }
     let transition_id = document.getElementById(index_id)
-    console.log(transition_id)
     transition_id.style.transition = "1s";
     transition_id.style.height = "100px";
   }
@@ -88,9 +87,46 @@ class App extends React.Component {
 
     onFirstChange = (e, index) => {
       let first_data = this.state.first_data
-      first_data[index] = {"name": e.target.value, "index": index}
+      let value = e.target.value;
+      first_data[index] = {"name": value, "index": index}
       this.setState({
         first_data: first_data
+      }, () => this.manageDropDowns(index, value))
+    }
+
+    getDropDownType = (index) => {
+      let dropdowns = this.state.dropdowns;
+      let first_data = this.state.first_data;
+      let name = null;
+      for(let i of first_data){
+        if(i){
+          if(i.index === index){
+            name = i.name;
+          }
+        }
+      }
+      for(let i of dropdowns){
+        if(i){
+            if(i.index === index){
+              if(name === "by" || name === "min" ||name === "max"){
+                return "input"
+              } else {
+                return "dropdown"
+              }
+          }
+        }
+      }
+    }
+
+    manageDropDowns = (index, value) => {
+      if(index < 2){
+        return
+      }
+
+      let dropdowns = this.state.dropdowns;
+      dropdowns[index] = {"value": value, "index": index}
+      this.setState({
+        dropdowns: dropdowns
       })
     }
 
@@ -102,11 +138,47 @@ class App extends React.Component {
     }
 
     onFirstUpdateChange = (e, index) => {
-      this.state.first_update_data[index] = {"name": e.target.value, "index": index}
+      let value = e.target.value;
+      this.state.first_update_data[index] = {"name": value, "index": index}
       this.setState({
         first_update_data: this.state.first_update_data
-      })
+      }, () => this.manageDropDowns(index, value))
     }
+
+
+    // manageUpdateDropDowns = (index) => {
+    //   if(index < 2){
+    //     return
+    //   }
+    //   let dropdowns = this.state.dropdowns;
+    //   for(let i=0; i<dropdowns.length; i++){
+    //     if(dropdowns.includes(index)){
+    //       dropdowns.splice(i, 1)
+    //     }
+    //     if(dropdowns.includes("smooth"+index)){
+    //       dropdowns.splice(i, 1)
+    //     }
+    //   }
+
+    //   this.setState({
+    //     dropdowns: dropdowns
+    //   })
+
+    //   let first_data = this.state.first_data;
+    //   for(let i of first_data){
+    //     if(i.name === "by" || i.name === "min" ||i.name === "max"){
+    //         this.setState({
+    //           dropdowns: [...this.state.dropdowns, index]
+    //         })
+    //     } else if (i.name === "smoothing"){
+    //       this.setState({
+    //         dropdowns: [...this.state.dropdowns, "smooth"+index]
+    //       })
+    //     }
+    //   }
+    // }
+
+
 
     onSecondUpdateChange = (e, index) => {
       this.state.second_update_data[index] = {"desc": e.target.value, "index": index}
@@ -160,8 +232,12 @@ class App extends React.Component {
       }
 
       for(let i=0; i< new_data1.length; i++){
-        if(new_data1[i]["index"] === data2[i]["index"]){
-          new_data1[i]["desc"] = data2[i]["desc"]
+        if(data2[i]){
+          if(new_data1[i]["index"] === data2[i]["index"]){
+            new_data1[i]["desc"] = data2[i]["desc"]
+          }
+        } else {
+          new_data1[i]["desc"] = "ewma"
         }
       }
 
@@ -244,8 +320,6 @@ class App extends React.Component {
               } catch(err) {
                 // console.log(i, j)
               }
-
-
             }
           }
 
@@ -405,10 +479,8 @@ class App extends React.Component {
     }
 
     handleDt2CreatedGroupsColumnsColor(){
-      console.log("----------------->>>>")
       let databases = this.state.databases;
       let dt2groups = this.state.dt2groups;
-      console.log(JSON.stringify(dt2groups))
       let grouped_column_ids = []
       for(let dt2group of dt2groups){
         for(let sub_group of dt2group.sub_groups){
@@ -723,11 +795,46 @@ class App extends React.Component {
       this.setState({
         created_form: modified_form
       })
-
-      
-
     }
 
+
+    deleteCreatedForm = () => {
+      let created_form = this.state.created_form;
+      if(created_form.length === 2){
+        alert("sub group is mandate..")
+      }
+      created_form.pop()
+      this.setState({
+        created_form: created_form
+      })
+    }
+
+    addFormToUpdate = () => {
+      let created_form = this.state.created_form;
+      created_form.push({"name":"","desc":"","index":created_form.length})
+      this.setState({
+        created_form: created_form
+      })
+    }
+
+    handleToggle = (name) => {
+      let actives = this.state.actives
+      if(actives.includes(name)){
+          for(let i=0; i<actives.length; i++){
+           if(actives[i] === name){
+              actives.splice(i, 1)
+           }   
+          }
+          this.setState({
+              actives: actives
+          })
+          return 
+      }
+
+      this.setState({
+          actives:[...this.state.actives, name]
+      });
+  }
 
   render() {
     
@@ -885,22 +992,56 @@ class App extends React.Component {
                     <span className="tc bold">{index === 0 ? "Crate group" : index === 1 ? "Crate sub group" : "Crate operations"}</span>
                     
                     <div className="form-transion" id={"transion"+index}>
-                    <input
-                        className="dynamicForm__itemInput"
-                        type="text"
-                        value={form["first"]}
-                        onChange={(e) => this.onFirstChange(e, index)}
-                        placeholder={index === 0 ? "enter group name" : index === 1 ? "enter sub group name" : "enter operation name"}
-                    />
-                    <br/>
-                    <input
-                        className="dynamicForm__itemInput"
-                        type="text"
-                        value={form["secons"]}
-                        onChange={(e) => this.onSecondChange(e, index)}
-                        placeholder={index === 0 ? "enter group desc" : index === 1 ? "enter sub group desc" : "enter operation desc"}
-                    />
-                    <br/>
+                      {
+                        index > 1 ? 
+                        (
+                          <div>
+                            <select className="select-input" onChange={(e) => this.onFirstChange(e, index)}>
+                              <option value="by">By</option>
+                              <option value="max">Max</option>
+                              <option value="min">Min</option>
+                              <option value="smoothing">Smoothing</option>
+                            </select>
+                            {
+                              this.getDropDownType(index) === "dropdown" ? (
+                              <select className="select-input" onChange={(e) => this.onSecondChange(e, index)}>
+                                <option value="ewma">EWMA</option>
+                                <option value="sma">SMA</option>
+                              </select>
+                              ) : this.getDropDownType(index) === "input" ? (
+                                <input
+                                className="dynamicForm__itemInput"
+                                type="number"
+                                value={form["first"]}
+                                onChange={(e) => this.onSecondChange(e, index)}
+                                placeholder="value"
+                            />
+                              ) : ('')
+                            }
+
+                          </div>
+                        ): (
+                          <div>
+                              <input
+                                  className="dynamicForm__itemInput"
+                                  type="text"
+                                  value={form["first"]}
+                                  onChange={(e) => this.onFirstChange(e, index)}
+                                  placeholder={index === 0 ? "enter group name" : index === 1 ? "enter sub group name" : "enter operation name"}
+                              />
+                              <br/>
+                              <input
+                                  className="dynamicForm__itemInput"
+                                  type="text"
+                                  value={form["secons"]}
+                                  onChange={(e) => this.onSecondChange(e, index)}
+                                  placeholder={index === 0 ? "enter group desc" : index === 1 ? "enter sub group desc" : "enter operation desc"}
+                              />
+                              <br/>
+                          </div>
+                        )
+                      }
+
                     </div>
 
                   </div>
@@ -929,6 +1070,38 @@ class App extends React.Component {
                     this.state.created_form.map((form, index) => (
                       <div className={"form-container group-form" + index === 0 ? "group-form": index === 1 ? "sub-group-form" : index >= 2 ? "operation-form"  : ""}>
                         <span className="tc bold">{index === 0 ? "Group" : index === 1 ? "Sub group" : "Operations"}</span>
+                        
+                        {
+                        index > 1 ? 
+                        (
+                          <div>
+                            <select className="select-input" defaultValue={form["name"]} onChange={(e) => this.onFirstUpdateChange(e, index)}>
+                              <option value="by">By</option>
+                              <option value="max">Max</option>
+                              <option value="min">Min</option>
+                              <option value="smoothing">Smoothing</option>
+                            </select>
+
+                            {
+                              this.getDropDownType(index) === "dropdown" ? (
+                              <select className="select-input" defaultValue={form["desc"]} onChange={(e) => this.onSecondUpdateChange(e, index)}>
+                                <option value="ewma">EWMA</option>
+                                <option value="sma">SMA</option>
+                              </select>
+                              ) : this.getDropDownType(index) === "input" ? (
+                                <input
+                                className="dynamicForm__itemInput"
+                                type="number"
+                                defaultValue ={form["desc"]}
+                                onChange={(e) => this.onSecondUpdateChange(e, index)}
+                                placeholder="value"
+                            />
+                              ) : ('')
+                            }
+
+                          </div>
+                        ): (
+                          <div>
                         <input
                             className="dynamicForm__itemInput"
                             type="text"
@@ -945,6 +1118,9 @@ class App extends React.Component {
                             placeholder={index === 0 ? "enter group desc" : index === 1 ? "enter sub group desc" : "enter operation desc"}
                         />
                         <br/>
+                        </div>
+                        )
+                        }
                         
                       </div>
                     ))
@@ -952,7 +1128,13 @@ class App extends React.Component {
 
                       {
                         this.state.created_form.length ? (
+                          <div>
+                          <div className="blue-font-color f15 ma2040">
+                          <i onClick={() => this.deleteCreatedForm()} className="fa fa-minus-circle fl pointer" aria-hidden="true"></i>
+                          <i title="create group"  onClick={(e) => this.addFormToUpdate(e)} className="fa fa-plus-circle fr pointer" aria-hidden="true"></i>
+                          </div>
                           <center><button onClick={this.handleUpdate}>Update</button></center>
+                          </div>
                         ) : ('')
                       }
             

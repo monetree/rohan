@@ -190,3 +190,13 @@ input {
 .operation-form {
   margin:10px 10px 10px 50px;
 }
+
+.select-input{
+  border-radius: 5px;
+  outline:none;
+  background:#fff;
+  border:2px solid #072856;
+  padding:5px 10px;
+  width: 93%;
+  margin:5px;
+}
