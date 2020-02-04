@@ -200,3 +200,24 @@ input {
   width: 93%;
   margin:5px;
 }
+
+
+.area {
+  width: 100%;
+  padding: 5px;
+  /* border: 1px solid #333; */
+  margin-bottom: 2cm;
+}
+.dropZone {
+  border: 2px dashed #072856;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.br5{
+  border-radius: 5px;
+}
+
+.f14{
+  font-size: 14px;
+}

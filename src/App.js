@@ -95,9 +95,15 @@ class App extends React.Component {
       }, () => this.manageDropDowns(index, value))
     }
 
-    getDropDownType = (index) => {
+    getDropDownType = (index, update=false) => {
       let dropdowns = this.state.dropdowns;
-      let first_data = this.state.first_data;
+      let first_data = null;
+      if(update){
+        first_data = this.state.first_update_data;
+      } else {
+        first_data = this.state.first_data;
+      }
+   
       let name = null;
       for(let i of first_data){
         if(i){
@@ -302,84 +308,6 @@ class App extends React.Component {
     }
 
     handleUpdate = () => {
-
-          // let created_form = this.state.created_form;
-          // let data1 =this.state.first_update_data;
-          // let data2 = this.state.second_update_data;
-          
-          // let created_form_new = JSON.parse(JSON.stringify(created_form))
-          // let column_id = created_form_new[0]["column_id"]
-
-
-          // for(let i of data1){
-          //   for(let j of created_form_new){
-
-          //     try{
-          //       if(i.index === j.index){
-          //         if(i.index === 0){
-          //           j.group_name = i.name
-          //         } else if(i.index === 1){
-          //           j.sub_group_name =  i.name
-          //         } else {
-          //           j.name =  i.name
-          //         }
-          //       }
-          //     } catch(err) {
-          //       // console.log(i, j)
-          //     }
-          //   }
-          // }
-
-          // for(let i of data2){
-          //   for(let j of created_form_new){
-
-          //     try{
-          //       if(i.index === j.index){
-          //         if(i.index === 0){
-          //           j.group_desc = i.desc
-          //         } else if(i.index === 1){
-          //           j.sub_group_desc =  i.desc
-          //           // console.log(j.sub_group_desc, "j.sub_group_desc")
-          //         } else {
-          //           j.desc =  i.desc
-          //         }
-          //       }
-          //     } catch(err) {
-          //       // console.log(i, j)
-          //     }
-
-
-          //   }
-          // }
-
-          // let created_form_new2 = []
-          // for(let i of JSON.parse(JSON.stringify(created_form_new))){
-          //   created_form_new2.push(i)
-          // }
-
-    
-
-          // let group_name = created_form_new2[0]["group_name"]
-          // let group_desc = created_form_new2[0]["group_desc"]
-          // let sub_group_name = created_form_new2[1]["sub_group_name"]
-          // let sub_group_desc = created_form_new2[1]["sub_group_desc"]
-          // let operations = []
-          // if(created_form_new2.length > 2){
-          //   created_form_new2.splice(0, 2)
-          //   for(let i of created_form_new2){
-          //     operations.push({"name": i.name, "desc": i.desc})
-          //   }
-          // }
-
-        // let created_group = [
-        //       {"group_name": group_name, "group_desc": group_desc, "sub_groups": [
-        //       {"sub_group_name": sub_group_name, "sub_group_desc": sub_group_desc, "operations": operations, 
-        //       "columns": []
-        //     }
-        //   ]
-        // }]
-
-
         this.setState({
           created_form:[],
           showcreateform: false
@@ -877,17 +805,28 @@ class App extends React.Component {
             </ul>
         </div>
           <div className="w3-third" style={{ borderRight:'2px solid black', background:'#eff1f1', height:'100%',left:'33%', position:'fixed',overflowY:'auto' }} onContextMenu={(e) => this.showFormInDT2(e, true)}>
-        <div className="droppable" onDrop={(event) =>
+        <div className="area">
+        <div className="dropZone" onDrop={(event) =>
             this.drop(event)} onDragStart={(event) => this.drag(event)}  onDragOver={(event) => this.allowDrop(event)} style={{ margin:'5px' }}>
-            <ul>
-              {
-              this.state.dt2_dragged_columns.map(dt2_dragged_column => (
-              <li style={dt2_dragged_column.selected ? { background:'#F7F7FA' } : {}} onClick={() => this.pushToForm(dt2_dragged_column)} className="pointer" id={dt2_dragged_column.id} draggable="true" onDragStart={(event) => this.drag(event)}>
-                <i className="fa fa-file-text-o" aria-hidden="true"></i> {dt2_dragged_column.column_name} 
-              </li>
-              ))
-              }
-            </ul>
+            {
+              this.state.dt2_dragged_columns.length ? 
+              (
+                <ul>
+                {
+                this.state.dt2_dragged_columns.map(dt2_dragged_column => (
+                <li style={dt2_dragged_column.selected ? { background:'#F7F7FA' } : {}} onClick={() => this.pushToForm(dt2_dragged_column)} className="pointer" id={dt2_dragged_column.id} draggable="true" onDragStart={(event) => this.drag(event)}>
+                  <i className="fa fa-file-text-o" aria-hidden="true"></i> {dt2_dragged_column.column_name} 
+                </li>
+                ))
+                }
+              </ul>
+              ): (
+                <p><i className="f15">👆</i> &nbsp;Drag columns here</p>
+              )
+            }
+
+      
+        </div>
         </div>
         {
         this.state.showformindt2 ? (
@@ -919,11 +858,11 @@ class App extends React.Component {
         {
         this.state.dt2groups.map((dt2group, index) =>(
         <li>
-            <span onClick={() => this.handleToggle(dt2group.group_name)} className="caret" style={{ cursor:'pointer' }} title={dt2group.group_desc}>
-            <i className="fa fa-object-group" aria-hidden="true"></i> 
+            <span style={{ cursor:'pointer' }} title={dt2group.group_desc}>
+            <i onClick={() => this.handleToggle(dt2group.group_name)} className={this.state.actives.includes(dt2group.group_name) ? "fa fa-folder-open": "fa fa-folder"} aria-hidden="true"></i> 
             <span onClick={() => this.makeDT2SubGroup(dt2group.group_name)} 
             onContextMenu={(ev)=>this.handleDelete(ev, "group", dt2group.group_name, "")}>
-            {dt2group.group_name}
+            &nbsp; {dt2group.group_name}
             </span>
             </span>
             <ul class={this.state.actives.includes(dt2group.group_name) ? "nested active" : "nested"}>
@@ -931,7 +870,7 @@ class App extends React.Component {
                   {
                   this.state.showDT2SubGroupform.show === true && this.state.showDT2SubGroupform.group_name ===  dt2group.group_name ? 
                   (
-              <li> <span><i className="fa fa-users" aria-hidden="true"></i> create Subgroup for {this.state.dt2_group_name}</span>
+              <li> <span><i className="fa fa-folder-open-o" aria-hidden="true"></i> create Subgroup for {this.state.dt2_group_name}</span>
                   <div style={{ border:'2px solid #072856', padding:'10px', margin:'10px 10px 10px 50px', borderRadius:'10px' }}>
                   <input
                     className="dynamicForm__itemInput"
@@ -956,13 +895,13 @@ class App extends React.Component {
               dt2group.sub_groups.map(sub_group => (
               <li onContextMenu={(ev)=>
                   this.handleDelete(ev, "sub_group", dt2group.group_name, sub_group.sub_group_name)} style={{ height:'auto',padding:'5px' }} draggable="true" onDragStart={(event) => this.drag(event)}> 
-                  <span title={sub_group.sub_group_desc}><i className="fa fa-users" aria-hidden="true"></i> {sub_group.sub_group_name}</span>
+                  <span title={sub_group.sub_group_desc}><i className="fa fa-folder-open-o" aria-hidden="true"></i> {sub_group.sub_group_name}</span>
                   <div onContextMenu={(ev)=>
-                    this.handleDelete(ev, "column", dt2group.group_name, sub_group.sub_group_name)} onDrop={(event) => this.dropInSubGroups(event, dt2group.group_name, sub_group.sub_group_name)}  onDragOver={(event) => this.allowDrop(event)} style={{ margin:"5px 5px 5px 20px",padding:'10px', height:'auto', border:'1px dashed blue' }}>
+                    this.handleDelete(ev, "column", dt2group.group_name, sub_group.sub_group_name)} onDrop={(event) => this.dropInSubGroups(event, dt2group.group_name, sub_group.sub_group_name)}  onDragOver={(event) => this.allowDrop(event)} style={{ margin:"5px 5px 5px 20px",padding:'10px', height:'auto', border:'1px dashed #072856', borderRadius:'5px' }}>
                     <ul>
                         {
                         sub_group.columns.map(column => (
-                        <li className="pointer" onDoubleClick={() => this.showDataInForm(column.id, dt2group.group_name, sub_group.sub_group_name)} id={column.id}><i className="fa fa-file-text-o" aria-hidden="true"></i> {column.column_name}</li>
+                        <li className="pointer" onDoubleClick={() => this.showDataInForm(column.id, dt2group.group_name, sub_group.sub_group_name)} id={column.id}><i className="fa fa-file" aria-hidden="true"></i> {column.column_name}</li>
                         ))
                         }
                     </ul>
@@ -1107,7 +1046,9 @@ class App extends React.Component {
                               (
                                 <span>
                                     {
-                                    this.getDropDownType(index) === "dropdown" ? (
+                                      
+                                    this.getDropDownType(index, "update") === "dropdown" ? (
+                                    
                                     <select 
                                     className="select-input" 
                                     defaultValue={form["desc"]} 
@@ -1115,7 +1056,7 @@ class App extends React.Component {
                                       <option value="ewma">EWMA</option>
                                       <option value="sma">SMA</option>
                                     </select>
-                                    ) : this.getDropDownType(index) === "input" ? (
+                                    ) : this.getDropDownType(index, "update") === "input" ? (
                                       <input
                                       className="dynamicForm__itemInput"
                                       type="number"
@@ -1129,7 +1070,7 @@ class App extends React.Component {
                               ):(
                                 <span>
                                     {
-                                    this.getDropDownType(index) === "dropdown" ? (
+                                    this.getDropDownType(index, "update") === "dropdown" ? (
                                     <select 
                                     className="select-input" 
                                     value={form["desc"]} 
@@ -1138,7 +1079,7 @@ class App extends React.Component {
                                       <option value="ewma">EWMA</option>
                                       <option value="sma">SMA</option>
                                     </select>
-                                    ) : this.getDropDownType(index) === "input" ? (
+                                    ) : this.getDropDownType(index, "update") === "input" ? (
                                       <input
                                       className="dynamicForm__itemInput"
                                       type="number"
