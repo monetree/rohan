@@ -49,7 +49,8 @@ class App extends React.Component {
       selected_column_d2:{},
       created_form: [],
       dropdowns:[],
-      actives: []
+      actives: [],
+      focused:[]
     };
   }
 
@@ -139,51 +140,55 @@ class App extends React.Component {
 
     onFirstUpdateChange = (e, index) => {
       let value = e.target.value;
+      let dt2groups = this.state.dt2groups;
+      let created_form = this.state.created_form
+      let key = created_form[0]["key"]
+      for(let i of dt2groups){
+        if(i.key === key){
+          if(index === 0){
+            i.group_name = value
+          } else if (index === 1){
+            i.sub_groups[0]["sub_group_name"] = value
+          } else {
+            try{
+              i.sub_groups[0]["operations"][index-2]["name"] = value
+            } catch(err){
+              i.sub_groups[0]["operations"].push({"name": value})
+            }
+          }
+        }
+      }
+
+
       this.state.first_update_data[index] = {"name": value, "index": index}
       this.setState({
-        first_update_data: this.state.first_update_data
+        first_update_data: this.state.first_update_data,
+        dt2groups: dt2groups
       }, () => this.manageDropDowns(index, value))
     }
 
 
-    // manageUpdateDropDowns = (index) => {
-    //   if(index < 2){
-    //     return
-    //   }
-    //   let dropdowns = this.state.dropdowns;
-    //   for(let i=0; i<dropdowns.length; i++){
-    //     if(dropdowns.includes(index)){
-    //       dropdowns.splice(i, 1)
-    //     }
-    //     if(dropdowns.includes("smooth"+index)){
-    //       dropdowns.splice(i, 1)
-    //     }
-    //   }
-
-    //   this.setState({
-    //     dropdowns: dropdowns
-    //   })
-
-    //   let first_data = this.state.first_data;
-    //   for(let i of first_data){
-    //     if(i.name === "by" || i.name === "min" ||i.name === "max"){
-    //         this.setState({
-    //           dropdowns: [...this.state.dropdowns, index]
-    //         })
-    //     } else if (i.name === "smoothing"){
-    //       this.setState({
-    //         dropdowns: [...this.state.dropdowns, "smooth"+index]
-    //       })
-    //     }
-    //   }
-    // }
-
-
-
     onSecondUpdateChange = (e, index) => {
-      this.state.second_update_data[index] = {"desc": e.target.value, "index": index}
+      let value = e.target.value;
+      let dt2groups = this.state.dt2groups;
+      let created_form = this.state.created_form
+      let key = created_form[0]["key"]
+      for(let i of dt2groups){
+        if(i.key === key){
+          if(index === 0){
+            i.group_desc = value
+          } else if (index === 1){
+            i.sub_groups[0]["sub_group_desc"] = value
+          } else {
+            i.sub_groups[0]["operations"][index-2]["desc"] = value
+          }
+        }
+      }
+
+      this.state.second_update_data[index] = {"desc": value, "index": index}
       this.setState({
-        second_update_data: this.state.second_update_data
+        second_update_data: this.state.second_update_data,
+        dt2groups: dt2groups
       })
     }
 
@@ -256,7 +261,7 @@ class App extends React.Component {
 
       let selected_column_d2 = this.state.selected_column_d2
       let created_group = [
-          {"group_name": group_name, "group_desc": group_desc, "sub_groups": [
+          {"key": Math.floor((Math.random() * 100000) + 1), "group_name": group_name, "group_desc": group_desc, "sub_groups": [
           {"sub_group_name": sub_group_name, "sub_group_desc": sub_group_desc, "operations": operations, 
           "columns": [selected_column_d2]
         }
@@ -267,6 +272,7 @@ class App extends React.Component {
 
     let dt2groups = this.state.dt2groups;
     let newDt2groups = dt2groups.concat(created_group);
+
 
     this.setState({
       dt2groups: newDt2groups
@@ -296,102 +302,83 @@ class App extends React.Component {
     }
 
     handleUpdate = () => {
-          let created_form = this.state.created_form;
-          let data1 =this.state.first_update_data;
-          let data2 = this.state.second_update_data;
+
+          // let created_form = this.state.created_form;
+          // let data1 =this.state.first_update_data;
+          // let data2 = this.state.second_update_data;
           
-          let created_form_new = JSON.parse(JSON.stringify(created_form))
-          let column_id = created_form_new[0]["column_id"]
+          // let created_form_new = JSON.parse(JSON.stringify(created_form))
+          // let column_id = created_form_new[0]["column_id"]
 
 
-          for(let i of data1){
-            for(let j of created_form_new){
+          // for(let i of data1){
+          //   for(let j of created_form_new){
 
-              try{
-                if(i.index === j.index){
-                  if(i.index === 0){
-                    j.group_name = i.name
-                  } else if(i.index === 1){
-                    j.sub_group_name =  i.name
-                  } else {
-                    j.name =  i.name
-                  }
-                }
-              } catch(err) {
-                // console.log(i, j)
-              }
-            }
-          }
+          //     try{
+          //       if(i.index === j.index){
+          //         if(i.index === 0){
+          //           j.group_name = i.name
+          //         } else if(i.index === 1){
+          //           j.sub_group_name =  i.name
+          //         } else {
+          //           j.name =  i.name
+          //         }
+          //       }
+          //     } catch(err) {
+          //       // console.log(i, j)
+          //     }
+          //   }
+          // }
 
-          for(let i of data2){
-            for(let j of created_form_new){
+          // for(let i of data2){
+          //   for(let j of created_form_new){
 
-              try{
-                if(i.index === j.index){
-                  if(i.index === 0){
-                    j.group_desc = i.desc
-                  } else if(i.index === 1){
-                    j.sub_group_desc =  i.desc
-                    // console.log(j.sub_group_desc, "j.sub_group_desc")
-                  } else {
-                    j.desc =  i.desc
-                  }
-                }
-              } catch(err) {
-                // console.log(i, j)
-              }
+          //     try{
+          //       if(i.index === j.index){
+          //         if(i.index === 0){
+          //           j.group_desc = i.desc
+          //         } else if(i.index === 1){
+          //           j.sub_group_desc =  i.desc
+          //           // console.log(j.sub_group_desc, "j.sub_group_desc")
+          //         } else {
+          //           j.desc =  i.desc
+          //         }
+          //       }
+          //     } catch(err) {
+          //       // console.log(i, j)
+          //     }
 
 
-            }
-          }
+          //   }
+          // }
 
-          let created_form_new2 = []
-          for(let i of JSON.parse(JSON.stringify(created_form_new))){
-            created_form_new2.push(i)
-          }
+          // let created_form_new2 = []
+          // for(let i of JSON.parse(JSON.stringify(created_form_new))){
+          //   created_form_new2.push(i)
+          // }
 
     
 
-          let group_name = created_form_new2[0]["group_name"]
-          let group_desc = created_form_new2[0]["group_desc"]
-          let sub_group_name = created_form_new2[1]["sub_group_name"]
-          let sub_group_desc = created_form_new2[1]["sub_group_desc"]
-          let operations = []
-          if(created_form_new2.length > 2){
-            created_form_new2.splice(0, 2)
-            for(let i of created_form_new2){
-              operations.push({"name": i.name, "desc": i.desc})
-            }
-          }
+          // let group_name = created_form_new2[0]["group_name"]
+          // let group_desc = created_form_new2[0]["group_desc"]
+          // let sub_group_name = created_form_new2[1]["sub_group_name"]
+          // let sub_group_desc = created_form_new2[1]["sub_group_desc"]
+          // let operations = []
+          // if(created_form_new2.length > 2){
+          //   created_form_new2.splice(0, 2)
+          //   for(let i of created_form_new2){
+          //     operations.push({"name": i.name, "desc": i.desc})
+          //   }
+          // }
 
-        let created_group = [
-              {"group_name": group_name, "group_desc": group_desc, "sub_groups": [
-              {"sub_group_name": sub_group_name, "sub_group_desc": sub_group_desc, "operations": operations, 
-              "columns": []
-            }
-          ]
-        }]
+        // let created_group = [
+        //       {"group_name": group_name, "group_desc": group_desc, "sub_groups": [
+        //       {"sub_group_name": sub_group_name, "sub_group_desc": sub_group_desc, "operations": operations, 
+        //       "columns": []
+        //     }
+        //   ]
+        // }]
 
-        let columns = []
-        let dt2groups = this.state.dt2groups;
-        let counter = 0
-        for (let dt2group of dt2groups){
-          for (let sub_group of dt2group.sub_groups){
-            for(let column of sub_group.columns){
-              if(column.id === column_id){
-                columns = sub_group.columns
-                dt2groups.splice(counter)
-              }
-            }
-          }
-          counter+=1
-        }
-        created_group[0]["sub_groups"][0]["columns"] = columns
-        let newDt2groups = dt2groups.concat(created_group);
-      
-        this.setState({
-          dt2groups: newDt2groups
-        }, () => this.handleDT2Tree())  
 
         this.setState({
           created_form:[],
@@ -564,13 +551,13 @@ class App extends React.Component {
     }
 
     handleDT2Tree = () => {
-      let toggler2 = document.getElementsByClassName("caret2");    
-      for (let i = 0; i < toggler2.length; i++) {
-        toggler2[i].addEventListener("click", function() {
-          this.parentElement.querySelector(".nested2").classList.toggle("active2");
-          this.classList.toggle("caret-down2");
-        });
-      }
+      // let toggler2 = document.getElementsByClassName("caret2");    
+      // for (let i = 0; i < toggler2.length; i++) {
+      //   toggler2[i].addEventListener("click", function() {
+      //     this.parentElement.querySelector(".nested2").classList.toggle("active2");
+      //     this.classList.toggle("caret-down2");
+      //   });
+      // }
     }
 
     handleDT2GroupSumit = () => {
@@ -759,14 +746,14 @@ class App extends React.Component {
 
     showDataInForm = (column_id, group_name, sub_group_name) => {
       let dt2groups = this.state.dt2groups;
-      let created_form = []
+      let created_form_data = []
       for(let dt2group of dt2groups){
         if(dt2group.group_name === group_name){
           for(let sub_group of dt2group.sub_groups){
             if(sub_group.sub_group_name === sub_group_name){
               for(let column of sub_group.columns){
                 if(column.id === column_id){
-                  created_form = dt2group
+                  created_form_data = dt2group
                 }
               }
             }
@@ -774,14 +761,12 @@ class App extends React.Component {
         }
       }
 
-
-
       let modified_form = []
-      modified_form.push({"group_name":created_form.group_name, "group_desc":created_form.group_desc  , "index":0})
-      modified_form.push({"sub_group_name":created_form.sub_groups[0]["sub_group_name"], "sub_group_desc":created_form.sub_groups[0]["sub_group_desc"]  , "index":1})
+      modified_form.push({"key": created_form_data.key, "group_name":created_form_data.group_name, "group_desc":created_form_data.group_desc  , "index":0})
+      modified_form.push({"sub_group_name":created_form_data.sub_groups[0]["sub_group_name"], "sub_group_desc":created_form_data.sub_groups[0]["sub_group_desc"]  , "index":1})
       
-      let columns = created_form.sub_groups[0]["columns"]
-      let operations = created_form.sub_groups[0]["operations"]
+      let columns = created_form_data.sub_groups[0]["columns"]
+      let operations = created_form_data.sub_groups[0]["operations"]
 
 
 
@@ -794,8 +779,10 @@ class App extends React.Component {
       modified_form[0]["column_id"] = column_id
       this.setState({
         created_form: modified_form
-      })
+      }, () => this.componentDidMount())
     }
+
+
 
 
     deleteCreatedForm = () => {
@@ -836,8 +823,22 @@ class App extends React.Component {
       });
   }
 
+  inputFocus = (name, index) => {
+    this.setState({
+      focused: [...  this.state.focused , name+index]
+    })
+  }
+
+  isFocused = (name, index) => {
+    let focused = this.state.focused;
+    if(focused.includes(name+index)){
+      return true
+    } else {
+      return false
+    }
+  }
+
   render() {
-    
     return (
       <div>
         <div className="w3-row-padding">
@@ -918,14 +919,14 @@ class App extends React.Component {
         {
         this.state.dt2groups.map((dt2group, index) =>(
         <li>
-            <span onClick={index !== this.state.dt2groups.length-1 ? () => this.handleDT2Tree() : ''} className="caret2" style={{ cursor:'pointer' }} title={dt2group.group_desc}>
+            <span onClick={() => this.handleToggle(dt2group.group_name)} className="caret" style={{ cursor:'pointer' }} title={dt2group.group_desc}>
             <i className="fa fa-object-group" aria-hidden="true"></i> 
             <span onClick={() => this.makeDT2SubGroup(dt2group.group_name)} 
             onContextMenu={(ev)=>this.handleDelete(ev, "group", dt2group.group_name, "")}>
             {dt2group.group_name}
             </span>
             </span>
-            <ul className="nested2">
+            <ul class={this.state.actives.includes(dt2group.group_name) ? "nested active" : "nested"}>
               <li>
                   {
                   this.state.showDT2SubGroupform.show === true && this.state.showDT2SubGroupform.group_name ===  dt2group.group_name ? 
@@ -1075,48 +1076,136 @@ class App extends React.Component {
                         index > 1 ? 
                         (
                           <div>
-                            <select className="select-input" defaultValue={form["name"]} onChange={(e) => this.onFirstUpdateChange(e, index)}>
-                              <option value="by">By</option>
-                              <option value="max">Max</option>
-                              <option value="min">Min</option>
-                              <option value="smoothing">Smoothing</option>
-                            </select>
+                            {
+                              this.isFocused(form["name"], index) ?
+                              (
+                                <select className="select-input" 
+                                defaultValue={form["name"]} 
+                                onChange={(e) => this.onFirstUpdateChange(e, index)}
+                                >
+                                <option value="by">By</option>
+                                <option value="max">Max</option>
+                                <option value="min">Min</option>
+                                <option value="smoothing">Smoothing</option>
+                              </select>
+                              ):(
+                                <select className="select-input" 
+                                value={form["name"]} 
+                                onFocus={() => this.inputFocus(form["name"], index)}
+                                >
+                                <option value="by">By</option>
+                                <option value="max">Max</option>
+                                <option value="min">Min</option>
+                                <option value="smoothing">Smoothing</option>
+                              </select>
+                              )
+                            }
+
 
                             {
-                              this.getDropDownType(index) === "dropdown" ? (
-                              <select className="select-input" defaultValue={form["desc"]} onChange={(e) => this.onSecondUpdateChange(e, index)}>
-                                <option value="ewma">EWMA</option>
-                                <option value="sma">SMA</option>
-                              </select>
-                              ) : this.getDropDownType(index) === "input" ? (
-                                <input
-                                className="dynamicForm__itemInput"
-                                type="number"
-                                defaultValue ={form["desc"]}
-                                onChange={(e) => this.onSecondUpdateChange(e, index)}
-                                placeholder="value"
-                            />
-                              ) : ('')
+                              this.isFocused(form["desc"], index) ?
+                              (
+                                <span>
+                                    {
+                                    this.getDropDownType(index) === "dropdown" ? (
+                                    <select 
+                                    className="select-input" 
+                                    defaultValue={form["desc"]} 
+                                    onChange={(e) => this.onSecondUpdateChange(e, index)}>
+                                      <option value="ewma">EWMA</option>
+                                      <option value="sma">SMA</option>
+                                    </select>
+                                    ) : this.getDropDownType(index) === "input" ? (
+                                      <input
+                                      className="dynamicForm__itemInput"
+                                      type="number"
+                                      defaultValue ={form["desc"]}
+                                      onChange={(e) => this.onSecondUpdateChange(e, index)}
+                                      placeholder="value"
+                                  />
+                                    ) : ('')
+                                  }
+                                </span>
+                              ):(
+                                <span>
+                                    {
+                                    this.getDropDownType(index) === "dropdown" ? (
+                                    <select 
+                                    className="select-input" 
+                                    value={form["desc"]} 
+                                    onFocus={() => this.inputFocus(form["desc"], index)}
+                                    >
+                                      <option value="ewma">EWMA</option>
+                                      <option value="sma">SMA</option>
+                                    </select>
+                                    ) : this.getDropDownType(index) === "input" ? (
+                                      <input
+                                      className="dynamicForm__itemInput"
+                                      type="number"
+                                      value ={form["desc"]}
+                                      onFocus={() => this.inputFocus(form["desc"], index)}
+                                      placeholder="value"
+                                  />
+                                    ) : ('')
+                                  }
+                                </span>
+                              )
                             }
+
+                   
 
                           </div>
                         ): (
                           <div>
-                        <input
-                            className="dynamicForm__itemInput"
-                            type="text"
-                            defaultValue={index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"]}
-                            onChange={(e) => this.onFirstUpdateChange(e, index)}
-                            placeholder={index === 0 ? "enter group name" : index === 1 ? "enter sub group name" : "enter operation name"}
-                        />
+                            {
+                              this.isFocused(index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"], index) ?
+                              (
+                                <input
+                                className="dynamicForm__itemInput"
+                                type="text"
+                                defaultValue={index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"]}
+                                // onFocus={() => this.inputFocus(index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"], index)}
+                                onChange={(e) => this.onFirstUpdateChange(e, index)}
+                                placeholder={index === 0 ? "enter group name" : index === 1 ? "enter sub group name" : "enter operation name"}
+                            />
+    
+                              ): (
+                                <input
+                                className="dynamicForm__itemInput"
+                                type="text"
+                                value={index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"]}
+                                onFocus={() => this.inputFocus(index === 0 ? form["group_name"] : index === 1 ? form["sub_group_name"] : form["name"], index)}
+                                // onChange={(e) => this.onFirstUpdateChange(e, index)}
+                                placeholder={index === 0 ? "enter group name" : index === 1 ? "enter sub group name" : "enter operation name"}
+                            />
+    
+                              )
+                            }
+
                         <br/>
-                        <input
+                        {
+                          this.isFocused(index === 0 ? form["group_desc"] : index === 1 ? form["sub_group_desc"] : form["desc"], index) ?
+                          (
+                            <input
                             className="dynamicForm__itemInput"
                             type="text"
                             defaultValue={index === 0 ? form["group_desc"] : index === 1 ? form["sub_group_desc"] : form["desc"]}
+                            // onFocus={(e) => this.secondInputFocus(e, index)}
                             onChange={(e) => this.onSecondUpdateChange(e, index)}
                             placeholder={index === 0 ? "enter group desc" : index === 1 ? "enter sub group desc" : "enter operation desc"}
                         />
+                          ):(
+                            <input
+                            className="dynamicForm__itemInput"
+                            type="text"
+                            value={index === 0 ? form["group_desc"] : index === 1 ? form["sub_group_desc"] : form["desc"]}
+                            onFocus={() => this.inputFocus(index === 0 ? form["group_desc"] : index === 1 ? form["sub_group_desc"] : form["desc"], index)}
+                            // onChange={(e) => this.onSecondUpdateChange(e, index)}
+                            placeholder={index === 0 ? "enter group desc" : index === 1 ? "enter sub group desc" : "enter operation desc"}
+                        />
+                          )
+                        }
+
                         <br/>
                         </div>
                         )
